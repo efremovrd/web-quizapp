@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios"
 import { useState, useEffect } from "react"
 import { IAnswer, IPoolAnswer, IQuestion } from "../models"
+import api from "../services/Api"
 
 interface IUseAnswersProps {
     token: string
@@ -39,7 +40,7 @@ export function useAnswers({token, formid, questions, setError}: IUseAnswersProp
             var i = 0
             var err = false
             while (i < poolsanswers.length && !err) {
-                const response = await axios.get("http://localhost:9090/api/v1/users/"+poolsanswers[i].id, {headers: {"Authorization": "Bearer "+token}})
+                const response = await api.get("users/"+poolsanswers[i].id)
                 if (response.status === 200) {
                     setPoolsAnswers(prev => prev.map(el => {return ({...el, login: response.data["login"]})}))
                 } else {
@@ -64,7 +65,7 @@ export function useAnswers({token, formid, questions, setError}: IUseAnswersProp
             var i = 0
             var err = false
             while (i < poolsanswers.length && !err) {
-                const response = await axios.get("http://localhost:9090/api/v1/forms/"+formid+"/poolsanswer/"+poolsanswers[i].id+"?limit=5000&offset=0", {headers: {"Authorization": "Bearer "+token}})
+                const response = await api.get("forms/"+formid+"/poolsanswer/"+poolsanswers[i].id+"?limit=5000&offset=0")
                 if (response.status === 200) {
                     setPoolsAnswers(prev => prev.map(el => {return ({...el, answers: response.data["answers"].map((el: IAnswer) => {return ({id: el.id, answer: el.value, question: getQuestion(el.question_id)})})})}))
                 } else {
@@ -84,7 +85,7 @@ export function useAnswers({token, formid, questions, setError}: IUseAnswersProp
 
     async function fetchPoolsAnswers() {
         try {
-            const response = await axios.get("http://localhost:9090/api/v1/forms/"+formid+"/poolsanswer?limit=5000&offset=0", {headers: {"Authorization": "Bearer "+token}})
+            const response = await api.get("forms/"+formid+"/poolsanswer?limit=5000&offset=0")
             if (response.status === 204) {
                 setError("Такого опроса не существует!\nВы будете перенаправлены на предыдущую страницу.")
             } else if (response.status === 200) {

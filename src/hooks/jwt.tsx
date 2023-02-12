@@ -33,6 +33,8 @@ export const JWTState = ({ children }: {children: React.ReactNode}) => {
             setToken(res.data.token)
             setLogin(user.login)
 
+            api.defaults.headers.common["Authorization"] = "Bearer "+res.data.token
+
             if (location && location.state && location.state['from']){
                 navigate(location.state['from'], {state: {from: location.pathname}})
             } else {

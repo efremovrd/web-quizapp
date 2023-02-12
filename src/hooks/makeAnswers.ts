@@ -1,6 +1,7 @@
 import { IAnswer, IForm, IQuestion } from "../models"
 import axios, { AxiosError } from "axios"
 import { useState, useEffect } from "react"
+import api from "../services/Api"
 
 interface ICreateAnswers {
     id: string
@@ -26,9 +27,8 @@ export function useCreateAnswers(token: string, formid: string) {
 
     async function createAnswers() {
         try {
-            const response = await axios.post("http://localhost:9090/api/v1/forms/"+formid+"/poolsanswer",
-                {answers: answers.map(answer => {return {question_id: answer.answer.question_id, value: answer.answer.value}})},
-                {headers: {"Authorization": "Bearer "+token}})
+            const response = await api.post("forms/"+formid+"/poolsanswer",
+                {answers: answers.map(answer => {return {question_id: answer.answer.question_id, value: answer.answer.value}})})
             if (response.status === 201) {
                 setInfo("Ваши ответы отправлены.")
             }
@@ -49,7 +49,7 @@ export function useCreateAnswers(token: string, formid: string) {
 
     async function fetchQuestions() {
         try {
-            const response = await axios.get("http://localhost:9090/api/v1/forms/"+formid+"/questions?limit=5000&offset=0", {headers: {"Authorization": "Bearer "+token}})
+            const response = await api.get("forms/"+formid+"/questions?limit=5000&offset=0")
             if (response.status === 200) {
                 response.data['questions'].map((question: any) => setAnswers(prev => prev.concat([addAnswer(question)])))
             } else if (response.status === 204) {
@@ -63,7 +63,7 @@ export function useCreateAnswers(token: string, formid: string) {
 
     async function fetchForm() {
         try {
-            const response = await axios.get<IForm>("http://localhost:9090/api/v1/forms/"+formid, {headers: {"Authorization": "Bearer "+token}})
+            const response = await api.get<IForm>("forms/"+formid)
             if (response.status === 204) {
                 setError("Такого опроса не существует!\nВы будете перенаправлены на предыдущую страницу.")
             } else {

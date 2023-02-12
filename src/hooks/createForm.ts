@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios"
 import { useState } from "react"
 import { IQuestion } from "../models"
+import api from "../services/Api"
 
 interface ICreateQuestion {
     id: number
@@ -35,25 +36,23 @@ export function useCreateForm(token: string) {
     async function createForm() {
         try {
             var err = false
-            const response_create_form = await axios.post("http://localhost:9090/api/v1/forms", {
+            const response_create_form = await api.post("forms", {
                     title: title,
                     description: description
-                },
-                {headers: {"Authorization": "Bearer "+token}})
+                })
             
             var i = 0
             while (err === false && i < questions.length) {
-                const response_create_question = await axios.post("http://localhost:9090/api/v1/forms/"+response_create_form.data["id"]+"/questions", {
+                const response_create_question = await api.post("forms/"+response_create_form.data["id"]+"/questions", {
                     header: questions[i].question.header
-                },
-                {headers: {"Authorization": "Bearer "+token}})
+                })
                 
                 i++
                 err = response_create_question.status === 201 ? false : true
             }
 
             if (err) {
-                await axios.delete("http://localhost:9090/api/v1/forms/"+response_create_form.data["id"], {headers: {"Authorization": "Bearer "+token}})
+                await api.delete("forms/"+response_create_form.data["id"])
             } else {
                 setInfo("Опрос успешно создан.")
             }

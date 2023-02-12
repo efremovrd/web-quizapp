@@ -1,6 +1,7 @@
 import { IForm, IQuestion } from "../models"
 import axios, { AxiosError } from "axios"
 import { useState, useEffect } from "react"
+import api from "../services/Api"
 
 interface IEdited {
     updated: boolean
@@ -84,7 +85,7 @@ export function useEditForm({token, formid, setError, setInfo}: IUseEditFormProp
         try {
             var err = false
 
-            const response = await axios.patch("http://localhost:9090/api/v1/forms/"+formid, {title: title, description: description}, {headers: {"Authorization": "Bearer "+token}})
+            const response = await api.patch("forms/"+formid, {title: title, description: description})
             if (response.status !== 200) {
                 err = true
             }
@@ -92,21 +93,21 @@ export function useEditForm({token, formid, setError, setInfo}: IUseEditFormProp
             var i = 0
             while (!err && i < questions.length) {
                 if (questions[i].question.id[0] === "-") {
-                    const response = await axios.post("http://localhost:9090/api/v1/forms/"+formid+"/questions", {header: questions[i].question.header}, {headers: {"Authorization": "Bearer "+token}})
+                    const response = await api.post("forms/"+formid+"/questions", {header: questions[i].question.header})
                     if (response.status !== 201) {
                         err = true
                     } else {
                         updateQuestion(i, response.data['id'])
                     }
                 } else if (questions[i].edited.deleted) {
-                    const response = await axios.delete("http://localhost:9090/api/v1/forms/"+formid+"/questions/"+questions[i].question.id, {headers: {"Authorization": "Bearer "+token}})
+                    const response = await api.delete("forms/"+formid+"/questions/"+questions[i].question.id)
                     if (response.status !== 200) {
                         err = true
                     } else {
                         delQuestion(questions[i].question.id, false)
                     }
                 } else if (questions[i].edited.updated) {
-                    const response = await axios.put("http://localhost:9090/api/v1/forms/"+formid+"/questions/"+questions[i].question.id, {header: questions[i].question.header}, {headers: {"Authorization": "Bearer "+token}})
+                    const response = await api.put("forms/"+formid+"/questions/"+questions[i].question.id, {header: questions[i].question.header})
                     if (response.status !== 200) {
                         err = true
                     } else {
@@ -131,7 +132,7 @@ export function useEditForm({token, formid, setError, setInfo}: IUseEditFormProp
 
     async function fetchQuestions() {
         try {
-            const response = await axios.get("http://localhost:9090/api/v1/forms/"+formid+"/questions?limit=5000&offset=0", {headers: {"Authorization": "Bearer "+token}})
+            const response = await api.get("forms/"+formid+"/questions?limit=5000&offset=0")
             if (response.status === 200) {
                 response.data['questions'].map((question: IQuestion) => addQuestion(question.id, question.header))
             }
@@ -143,7 +144,7 @@ export function useEditForm({token, formid, setError, setInfo}: IUseEditFormProp
 
     async function fetchForm() {
         try {
-            const response = await axios.get<IForm>("http://localhost:9090/api/v1/forms/"+formid, {headers: {"Authorization": "Bearer "+token}})
+            const response = await api.get<IForm>("forms/"+formid)
             if (response.status === 204) {
                 setError("Такого опроса не существует!\nВы будете перенаправлены на предыдущую страницу.")
             } else {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { IForm } from "../models"
 import axios, {AxiosError} from 'axios'
+import api from "../services/Api"
 
 export function useUserForms(token: string, baselimit: string | null, baseoffset: string | null) {
 
@@ -14,7 +15,7 @@ export function useUserForms(token: string, baselimit: string | null, baseoffset
   async function delUserForm(form: IForm) {
       try {
           setError('')
-          await axios.delete("http://localhost:9090/api/v1/forms/"+form.id, {headers: {"Authorization": "Bearer "+token}})
+          await api.delete("forms/"+form.id)
           setForms(prev => prev.filter(function(ele){return ele.id !== form.id}))
       } catch (e: unknown) {
           const error = e as AxiosError
@@ -25,7 +26,7 @@ export function useUserForms(token: string, baselimit: string | null, baseoffset
   async function fetchUserForms() {
     try {
       setError('')
-      const response = await axios.get("http://localhost:9090/api/v1/forms?limit="+limit+"&offset="+offset, {headers: {"Authorization": "Bearer "+token}})
+      const response = await api.get("forms?limit="+limit+"&offset="+offset)
       if (response.status === 200) {
         setForms(response.data['forms'])
       }
